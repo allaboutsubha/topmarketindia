@@ -6,29 +6,28 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # নির্দিষ্ট ভার্সন দিলে স্ট্যাবল থাকে
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-level: '3.10'
+      - name: Get Date
+        id: get-date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev python3-dev
-          pip install --upgrade pip
-          pip install buildozer kivy
+      - name: Cache Buildozer
+        uses: actions/cache@v3
+        with:
+          path: .buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
 
       - name: Build with Buildozer
-        run: |
-          # সাইলেন্ট মোডে বিল্ড করার জন্য 'yes' কমান্ড ব্যবহার
-          yes | buildozer -v android debug
-        
+        uses: ArtemSerebrennkov/buildozer-action@v1
+        with:
+          command: buildozer android debug
+          buildozer_version: master
+
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: my-app-apk
+          name: Akrups-App
           path: bin/*.apk
