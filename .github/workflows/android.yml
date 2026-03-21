@@ -3,20 +3,31 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # নির্দিষ্ট ভার্সন দিলে স্ট্যাবল থাকে
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Dependencies
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Buildozer and Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev python3-dev zip unzip libtool autoconf cmake gettext
+          sudo apt-get install -y build-essential libffi-dev python3-dev zip unzip libtool autoconf cmake gettext libexport-perl libtinfo5
           pip install --upgrade pip
           pip install buildozer kivy
 
       - name: Build with Buildozer
         run: |
-          # সব লাইসেন্স অটো-একসেপ্ট করে বিল্ড শুরু করবে
+          # সাইলেন্ট মোডে বিল্ড করার জন্য yes কমান্ড
           yes | buildozer -v android debug
         
       - name: Upload APK
