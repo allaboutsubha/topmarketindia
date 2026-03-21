@@ -1,33 +1,26 @@
 name: Build Android APK
-on: 
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # নির্দিষ্ট ভার্সন দিলে স্ট্যাবল থাকে
+    runs-on: ubuntu-22.04  # নির্দিষ্ট ভার্সন দিলে স্ট্যাবল থাকে
     steps:
       - uses: actions/checkout@v3
 
-      - name: Get Date
-        id: get-date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      - name: Cache Buildozer
-        uses: actions/cache@v3
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev python3-dev zip unzip libtool autoconf cmake gettext
+          pip install --upgrade pip
+          pip install buildozer kivy
 
       - name: Build with Buildozer
-        uses: ArtemSerebrennkov/buildozer-action@v1
-        with:
-          command: buildozer android debug
-          buildozer_version: master
-
+        run: |
+          # সব লাইসেন্স অটো-একসেপ্ট করে বিল্ড শুরু করবে
+          yes | buildozer -v android debug
+        
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: Akrups-App
+          name: package
           path: bin/*.apk
