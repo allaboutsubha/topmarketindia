@@ -1,5 +1,5 @@
-name: Build Android APK
-on: [push, workflow_dispatch]
+name: CI
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -7,30 +7,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      # সরাসরি বিল্ডোজার অ্যাকশন ব্যবহার (এটি সবথেকে স্ট্যাবল)
+      - name: Buildozer Android Action
+        uses: ArtemSerebrennkov/buildozer-action@v1.6.1
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          command: buildozer android debug
+          repository_root: .
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install Buildozer and Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev python3-dev zip unzip libtool autoconf cmake gettext libexport-perl libtinfo5
-          pip install --upgrade pip
-          pip install buildozer kivy
-
-      - name: Build with Buildozer
-        run: |
-          # সাইলেন্ট মোডে বিল্ড করার জন্য yes কমান্ড
-          yes | buildozer -v android debug
-        
-      - name: Upload APK
+      - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: package
